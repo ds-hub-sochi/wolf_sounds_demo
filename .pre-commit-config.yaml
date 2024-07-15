@@ -1,0 +1,54 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+        args:
+          - '--unsafe'
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: double-quote-string-fixer
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: requirements-txt-fixer
+      - id: check-added-large-files
+        args: [ '--maxkb=2048' ]
+  - repo: 'https://github.com/psf/black'
+    rev: 23.1.0
+    hooks:
+      - id: black
+        args: [ "--skip-string-normalization", "--line-length=120" ]
+  - repo: 'https://github.com/executablebooks/mdformat'
+    rev: 0.7.16
+    hooks:
+      - id: mdformat
+  - repo: 'https://github.com/kynan/nbstripout'
+    rev: 0.6.1
+    hooks:
+      - id: nbstripout
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        description: wemake-python-styleguide enforcement
+        entry: flake8
+        args: [ "--config=setup.cfg" ]
+        language: python
+        types: [ python ]
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: 'v2.7'
+    hooks:
+      - id: vulture
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        entry: bash -c 'isort --line-length 120 src/ modeling_piplines/ utils/ tests/'
+        language: system
+        types: [python]
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v3.1.0
+    hooks:
+    -   id: add-trailing-comma
