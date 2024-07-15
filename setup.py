@@ -1,10 +1,10 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='src',
+    name='wolf_sounds_demo',
     packages=find_packages(),
     version='0.1.0',
-    description='This repository is a template structure for new projects',
-    author='ds-hub-sochi',
+    description='Local wolf sound demo',
+    author='Nikolai Makarov @ ds-hub-sochi',
     license='',
 )

@@ -1,12 +1,11 @@
 # local package
 -e .
-pre-commit==3.0.4
+awscli
 
 # external requirements
 click
-Sphinx
 coverage
-awscli
 flake8
+pre-commit==3.0.4
 python-dotenv>=0.5.1
-
+Sphinx
