@@ -6,7 +6,6 @@ import os
 import pathlib
 
 import streamlit as st
-import torch
 import torchaudio
 from stqdm import stqdm
 
@@ -61,7 +60,7 @@ def main():
         key += 1
 
         if model_type is not None:
-            model = factory.create(model_type, './models')
+            model: type[WoldSoundClassifierIntarface] = factory.create(model_type, './models')
             st.write('Подель успешно загружена')
 
     with tabs[1]:
