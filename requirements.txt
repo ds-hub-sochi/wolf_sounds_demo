@@ -3,6 +3,6 @@
 # external requirements
 PySoundFile==0.9.0
 python-dotenv>=0.5.1
-streamlit==1.36.1
+streamlit==1.36.0
 torch
 torchaudio
