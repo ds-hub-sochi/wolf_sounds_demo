@@ -1,8 +1,8 @@
 from abc import abstractmethod
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
+from torch.nn import functional as F
 import torchaudio
 
 
@@ -33,6 +33,12 @@ class BaseWolfClassifier(WoldSoundClassifierIntarface):
         features = self.get_embeddings(input_tensor)
 
         return F.softmax(self.linear(features), dim=-1)[:, 1]
+    
+    def forward(
+        self,
+        input_tensor: torch.Tensor,
+    ) -> torch.Tensor:
+        return self.linear(F.normalize(self.feature_extractor(input_tensor)[0].mean(axis=1)))
 
 
 WOLF_CLASSIFIER_REGISTER: dict[str, type[WoldSoundClassifierIntarface]] = {}
