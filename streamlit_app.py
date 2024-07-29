@@ -162,11 +162,10 @@ if CONFIDENCE_THRESHOLD is not None:
                 for value in markup[file_name]:
                     if value[0] == interval_end:
                         interval_end = value[1]
-                    else:
-                        if interval_end != '00:00:00':
-                            intervals.append((interval_start, interval_end))
-                            interval_start = value[0]
-                            interval_end = value[1]
+                    elif interval_end != '00:00:00':
+                        intervals.append((interval_start, interval_end))
+                        interval_start = value[0]
+                        interval_end = value[1]
 
                 if interval_end != '00:00:00':
                     intervals.append((interval_start, interval_end))
