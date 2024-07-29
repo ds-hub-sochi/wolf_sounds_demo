@@ -9,8 +9,8 @@ import torch
 import torchaudio
 from stqdm import stqdm
 
-from src import model
 from src import constants
+from src import model
 
 
 if 'MODEL_SAMPLE_RATE' not in st.session_state:
@@ -114,8 +114,8 @@ if st.button(label='Начать разметку'):
             if wolf_probability > st.session_state.CONFIDENCE_THRESHOLD:
                 markup[file_name].append(
                     (
-                        f"{strftime('%H:%M:%S', gmtime(start))}",
-                        f"{strftime('%H:%M:%S', gmtime(end))}",
+                        f'{strftime("%H:%M:%S", gmtime(start))}',
+                        f'{strftime("%H:%M:%S", gmtime(end))}',
                     ),
                 )
 

@@ -3,9 +3,9 @@ from urllib.parse import urlencode
 
 import requests
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import torchaudio
+from torch import nn as nn
+from torch.nn import functional as F
 
 
 class WolfClassifier(nn.Module):
