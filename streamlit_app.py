@@ -38,8 +38,12 @@ uploaded_files = st.file_uploader(
 )
 
 if st.button(label='Начать разметку'):
-    markup: dict[str, list[tuple[str, str]]] = dict()
-    with open('./data/processed/results.json', 'w') as f:
+    markup: dict[str, list[tuple[str, str]]] = {}
+    with open(
+        './data/processed/results.json',
+        'w',
+        encoding='utf-8',
+    ) as f:
         json.dump(markup, f)
 
     for uploaded_file in stqdm(uploaded_files):
@@ -121,11 +125,20 @@ if st.button(label='Начать разметку'):
 
             running_duration += duration_value
 
-        with open('./data/processed/results.json', 'w') as f:
+        with open(
+            './data/processed/results.json',
+            'w',
+            encoding='uft-8',
+        ) as f:
             json.dump(markup, f)
 
-st.download_button(
-    label='Получить результаты разметки',
-    data=open('./data/processed/results.json', 'r'),
-    file_name='results.json',
-)
+with open(
+    './data/processed/results.json',
+    'r',
+    encoding='utf-8',
+) as f:
+    st.download_button(
+        label='Получить результаты разметки',
+        data=f,
+        file_name='results.json',
+    )
