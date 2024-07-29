@@ -1,4 +1,4 @@
-streamlit
 stqdm
+streamlit
 torch==2.2.1
 torchaudio
