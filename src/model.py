@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import requests
 import torch
 import torchaudio
-from torch import nn as nn
+from torch import nn
 from torch.nn import functional as F
 
 
@@ -33,11 +33,17 @@ class WolfClassifier(nn.Module):
         base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
         public_key = 'https://disk.yandex.ru/d/jXBIs4C9O3fcCQ'
 
-        final_url = base_url + urlencode(dict(public_key=public_key))
-        response = requests.get(final_url)
+        final_url = base_url + urlencode({'public_key': public_key})
+        response = requests.get(
+            final_url,
+            timeout=60,
+        )
         download_url = response.json()['href']
 
-        download_response = requests.get(download_url)
+        download_response = requests.get(
+            download_url,
+            timeout=60,
+        )
         with open('./data/saved_weights.pth', 'wb') as f:
             f.write(download_response.content)
 
