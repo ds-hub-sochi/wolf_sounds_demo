@@ -1,7 +1,7 @@
-import requests
 from pathlib import Path
 from urllib.parse import urlencode
 
+import requests
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,10 +23,10 @@ class WolfClassifier(nn.Module):
             hidden_size = self.feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
 
         self.linear: nn.Linear = nn.Linear(hidden_size, 2)
-        if not Path("./data/saved_weights.pth").exists():
+        if not Path('./data/saved_weights.pth').exists():
             self.load_weights()
 
-        self.load_state_dict(torch.load("./data/saved_weights.pth", map_location='cpu'))
+        self.load_state_dict(torch.load('./data/saved_weights.pth', map_location='cpu'))
 
     @staticmethod
     def load_weights():
@@ -58,7 +58,7 @@ class WolfClassifier(nn.Module):
         features = self.get_embeddings(input_tensor)
 
         return F.softmax(self.linear(features), dim=-1)[:, 1]
-    
+
     def forward(
         self,
         input_tensor: torch.Tensor,
