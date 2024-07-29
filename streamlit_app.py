@@ -24,7 +24,7 @@ if "CONFIDENCE_THRESHOLD" not in st.session_state:
     st.session_state.CONFIDENCE_THRESHOLD = constants.CONFIDENCE_THRESHOLD
 
 if "DEVICE" not in st.session_state:
-    st.session_state.DEVICE = constants.DEVICE
+    st.session_state.DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 if "model" not in st.session_state:
     st.session_state.model = model.WolfClassifier().to(st.session_state.DEVICE)
