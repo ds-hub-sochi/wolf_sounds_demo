@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 from math import ceil
 from time import gmtime, strftime
@@ -12,6 +13,9 @@ from stqdm import stqdm
 
 from src import constants
 from src import model
+
+
+CWD: str = os.getcwd()
 
 
 if 'MODEL_SAMPLE_RATE' not in st.session_state:
@@ -38,14 +42,14 @@ uploaded_files = st.file_uploader(
     type='wav',
 )
 
-pathlib.Path('./data/processed').mkdir(
+pathlib.Path(CWD).joinpath('/data/processed').mkdir(
     parents=True,
     exist_ok=True,
 )
 
 markup: dict[str, list[tuple[str, str]]] = {}
 with open(
-    './data/processed/results.json',
+    pathlib.Path(CWD).joinpath('/data/processed/results.json'),
     'w',
     encoding='utf-8',
 ) as f:
@@ -173,14 +177,14 @@ if CONFIDENCE_THRESHOLD is not None:
                 markup[file_name] = intervals
 
             with open(
-                './data/processed/results.json',
+                pathlib.Path(CWD).joinpath('/data/processed/results.json'),
                 'w',
                 encoding='utf-8',
             ) as f:
                 json.dump(markup, f)
 
     with open(
-        './data/processed/results.json',
+        pathlib.Path(CWD).joinpath('/data/processed/results.json'),
         'r',
         encoding='utf-8',
     ) as f:

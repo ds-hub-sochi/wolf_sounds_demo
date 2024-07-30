@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -16,6 +17,8 @@ class WolfClassifier(nn.Module):
 
         self.feature_extractor: nn.Module = torchaudio.pipelines.HUBERT_BASE.get_model()
 
+        self._cwd: str = os.getcwd()
+
         hidden_size: int = 0
         if hasattr(self.feature_extractor, 'encoder'):
             hidden_size = self.feature_extractor.encoder.transformer.layers[0].attention.k_proj.out_features
@@ -23,13 +26,12 @@ class WolfClassifier(nn.Module):
             hidden_size = self.feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
 
         self.linear: nn.Linear = nn.Linear(hidden_size, 2)
-        if not Path('./data/saved_weights.pth').exists():
+        if not Path(self._cwd).joinpath('./data/saved_weights.pth').exists():
             self.load_weights()
 
-        self.load_state_dict(torch.load('./data/saved_weights.pth', map_location='cpu'))
+        self.load_state_dict(torch.load(str(Path(self._cwd).joinpath('./data/saved_weights.pth')), map_location='cpu'))
 
-    @staticmethod
-    def load_weights():
+    def load_weights(self):
         base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
         public_key = 'https://disk.yandex.ru/d/jXBIs4C9O3fcCQ'
 
@@ -44,7 +46,7 @@ class WolfClassifier(nn.Module):
             download_url,
             timeout=60,
         )
-        with open('./data/saved_weights.pth', 'wb') as f:
+        with open(str(Path(self._cwd).joinpath('./data/saved_weights.pth')), 'wb') as f:
             f.write(download_response.content)
 
     @torch.inference_mode()
