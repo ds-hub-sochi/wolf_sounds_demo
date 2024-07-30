@@ -16,6 +16,7 @@ from src import model
 
 
 CWD: str = os.getcwd()
+pathlib.Path(CWD).joinpath('data').mkdir(parents=True, exist_ok=True)
 
 
 if 'MODEL_SAMPLE_RATE' not in st.session_state:
