@@ -26,10 +26,10 @@ class WolfClassifier(nn.Module):
             hidden_size = self.feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
 
         self.linear: nn.Linear = nn.Linear(hidden_size, 2)
-        if not Path(CWD).joinpath('./data/saved_weights.pth').exists():
+        if not Path(CWD).joinpath('data/saved_weights.pth').exists():
             self.load_weights()
 
-        self.load_state_dict(torch.load(str(Path(CWD).joinpath('./data/saved_weights.pth')), map_location='cpu'))
+        self.load_state_dict(torch.load(str(Path(CWD).joinpath('data/saved_weights.pth'))))
 
     def load_weights(self):
         base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
@@ -38,15 +38,15 @@ class WolfClassifier(nn.Module):
         final_url = base_url + urlencode({'public_key': public_key})
         response = requests.get(
             final_url,
-            timeout=60,
+            timeout=30,
         )
         download_url = response.json()['href']
 
         download_response = requests.get(
             download_url,
-            timeout=60,
+            timeout=30,
         )
-        with open(str(Path(CWD).joinpath('./data/saved_weights.pth')), 'wb') as f:
+        with open(str(Path(CWD).joinpath('data/saved_weights.pth')), 'wb') as f:
             f.write(download_response.content)
 
     @torch.inference_mode()

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import shutil
 from math import ceil
 from time import gmtime, strftime
 
@@ -16,8 +17,10 @@ from src import model
 
 
 CWD: str = os.getcwd()
-pathlib.Path(CWD).joinpath('data').mkdir(parents=True, exist_ok=True)
-
+pathlib.Path(CWD).joinpath('data').mkdir(
+    parents=True,
+    exist_ok=True,
+)
 
 if 'MODEL_SAMPLE_RATE' not in st.session_state:
     st.session_state.MODEL_SAMPLE_RATE = constants.MODEL_SAMPLE_RATE
@@ -43,25 +46,30 @@ uploaded_files = st.file_uploader(
     type='wav',
 )
 
-pathlib.Path(CWD).joinpath('/data/processed').mkdir(
+pathlib.Path(CWD).joinpath('data/processed').mkdir(
     parents=True,
     exist_ok=True,
 )
 
 markup: dict[str, list[tuple[str, str]]] = {}
 with open(
-    pathlib.Path(CWD).joinpath('/data/processed/results.json'),
+    pathlib.Path(CWD).joinpath('data/processed/timings.json'),
     'w',
     encoding='utf-8',
 ) as f:
     json.dump(markup, f)
 
+pathlib.Path(CWD).joinpath('data/processed/audio_with_detected_wolf').mkdir(
+    parents=True,
+    exist_ok=True,
+)
 
 CONFIDENCE_THRESHOLD = st.number_input(
     'Минимальное значение для уверенности модели в наличии воя',
-    value=None,
-    help='от 0 до 1. Чем ниже значение - тем большее количество записей без воя будет помечено, как с наличием воя.'
+    value=0.5,
+    help='от 0.0 до 1.0; чем ниже значение - тем большее количество записей без воя будет помечено, как с наличием воя.'
 )
+
 if CONFIDENCE_THRESHOLD is not None:
     if st.button(label='Начать разметку'):
         for uploaded_file in stqdm(uploaded_files):
@@ -159,6 +167,7 @@ if CONFIDENCE_THRESHOLD is not None:
                         )
                     )
                 ]
+
             else:
                 intervals: list[tuple[str, str]] = []
 
@@ -176,21 +185,37 @@ if CONFIDENCE_THRESHOLD is not None:
                     intervals.append((interval_start, interval_end))
 
                 markup[file_name] = intervals
+            
+            if len(markup[file_name]) != 0:
+                torchaudio.save(
+                    pathlib.Path(CWD).joinpath(f'data/processed/audio_with_detected_wolf/{file_name}'),
+                    waveform,
+                    sample_rate=st.session_state.MODEL_SAMPLE_RATE,
+                    format='wav',
+                    backend='ffmpeg',
+                )
 
             with open(
-                pathlib.Path(CWD).joinpath('/data/processed/results.json'),
+                pathlib.Path(CWD).joinpath('data/processed/timings.json'),
                 'w',
                 encoding='utf-8',
             ) as f:
                 json.dump(markup, f)
 
-    with open(
-        pathlib.Path(CWD).joinpath('/data/processed/results.json'),
-        'r',
-        encoding='utf-8',
-    ) as f:
-        st.download_button(
-            label='Получить результаты разметки',
-            data=f,
-            file_name='results.json',
+        shutil.make_archive(
+            pathlib.Path(CWD).joinpath('data/results'),
+            'zip',
+            pathlib.Path(CWD).joinpath('data/processed'),
         )
+        st.write(f'Разметка завершена; Размечено {len(uploaded_files)} записей')
+
+        with open(
+                pathlib.Path(CWD).joinpath('data/results.zip'),
+                'rb',
+        ) as zip_result:
+            st.download_button(
+                label='Получить результаты разметки',
+                data=zip_result,
+                help='Будет получен архив с теми аудио, на которых был обнаружен вой + файл с таймингами.',
+                file_name='results.zip',
+            )
