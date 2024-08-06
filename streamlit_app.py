@@ -210,8 +210,8 @@ if CONFIDENCE_THRESHOLD is not None:
         st.write(f'Разметка завершена; Размечено {len(uploaded_files)} записей')
 
         with open(
-                pathlib.Path(CWD).joinpath('data/results.zip'),
-                'rb',
+            pathlib.Path(CWD).joinpath('data/results.zip'),
+            'rb',
         ) as zip_result:
             st.download_button(
                 label='Получить результаты разметки',
@@ -219,3 +219,10 @@ if CONFIDENCE_THRESHOLD is not None:
                 help='Будет получен архив с теми аудио, на которых был обнаружен вой + файл с таймингами.',
                 file_name='results.zip',
             )
+        
+        os.remove(pathlib.Path(CWD).joinpath('data/results.zip'))
+        os.remove(pathlib.Path(CWD).joinpath('data/processed/timings.json'))
+
+        all_files = os.listdir(pathlib.Path(CWD).joinpath('data/processed/audio_with_detected_wolf'))
+        for file in all_files:
+            os.remove(pathlib.Path(CWD).joinpath(f'data/processed/audio_with_detected_wolf/{file}'))        
