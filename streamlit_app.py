@@ -17,7 +17,12 @@ from src import model
 
 
 CWD: str = os.getcwd()
-pathlib.Path(CWD).joinpath('data').mkdir(
+pathlib.Path(CWD).joinpath('data/processed').mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+pathlib.Path(CWD).joinpath('saved_weights').mkdir(
     parents=True,
     exist_ok=True,
 )
@@ -44,11 +49,6 @@ uploaded_files = st.file_uploader(
     'Выберете wav-файлы. Суммарный вес не должен превышать 6 GB',
     accept_multiple_files=True,
     type='wav',
-)
-
-pathlib.Path(CWD).joinpath('data/processed').mkdir(
-    parents=True,
-    exist_ok=True,
 )
 
 markup: dict[str, list[tuple[str, str]]] = {}
@@ -225,4 +225,4 @@ if CONFIDENCE_THRESHOLD is not None:
 
         all_files = os.listdir(pathlib.Path(CWD).joinpath('data/processed/audio_with_detected_wolf'))
         for file in all_files:
-            os.remove(pathlib.Path(CWD).joinpath(f'data/processed/audio_with_detected_wolf/{file}'))        
+            os.remove(pathlib.Path(CWD).joinpath(f'data/processed/audio_with_detected_wolf/{file}'))

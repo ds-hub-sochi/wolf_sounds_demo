@@ -17,23 +17,45 @@ class WolfClassifier(nn.Module):
     ):
         super().__init__()
 
-        self.feature_extractor: nn.Module = torchaudio.pipelines.HUBERT_BASE.get_model()
+        self.feature_extractor: torchaudio.models.Wav2Vec2Model = torchaudio.pipelines.WAV2VEC2_LARGE.get_model()
 
         hidden_size: int = 0
-        if hasattr(self.feature_extractor, 'encoder'):
+        if hasattr(
+            self.feature_extractor,
+            'encoder',
+        ):
             hidden_size = self.feature_extractor.encoder.transformer.layers[0].attention.k_proj.out_features
-        elif hasattr(self.feature_extractor, 'model'):
+            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[
+                :8
+            ]
+        elif hasattr(
+            self.feature_extractor,
+            'model',
+        ):
             hidden_size = self.feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
+            self.feature_extractor.model.encoder.transformer.layers = (
+                self.feature_extractor.model.encoder.transformer.layers[:8]
+            )
 
-        self.linear: nn.Linear = nn.Linear(hidden_size, 2)
-        if not Path(CWD).joinpath('data/saved_weights.pth').exists():
+        self.linear: nn.Linear = nn.Linear(
+            hidden_size,
+            2,
+        )
+
+        if not Path(CWD).joinpath('saved_weights/best_model.pth').exists():
             self.load_weights()
 
-        self.load_state_dict(torch.load(str(Path(CWD).joinpath('data/saved_weights.pth'))))
+        self.load_state_dict(
+            torch.load(
+                str(Path(CWD).joinpath('saved_weights/best_model.pth')),
+                map_location='cpu',
+            )
+        )
 
     def load_weights(self):
+        print("loading weights from yandex disk")
         base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
-        public_key = 'https://disk.yandex.ru/d/jXBIs4C9O3fcCQ'
+        public_key = 'https://disk.yandex.ru/d/LvdHTCXlt8TYgw'
 
         final_url = base_url + urlencode({'public_key': public_key})
         response = requests.get(
@@ -46,7 +68,8 @@ class WolfClassifier(nn.Module):
             download_url,
             timeout=30,
         )
-        with open(str(Path(CWD).joinpath('data/saved_weights.pth')), 'wb') as f:
+        print("saving pre-trained weights locally")
+        with open(str(Path(CWD).joinpath('saved_weights/best_model.pth')), 'wb') as f:
             f.write(download_response.content)
 
     @torch.inference_mode()
@@ -65,7 +88,10 @@ class WolfClassifier(nn.Module):
     ) -> torch.Tensor:
         features = self.get_embeddings(input_tensor)
 
-        return F.softmax(self.linear(features), dim=-1)[:, 1]
+        return F.softmax(
+            self.linear(features),
+            dim=-1,
+        )[:, 0]
 
     def forward(
         self,
