@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -41,7 +40,7 @@ class ASTBasedClassifier(nn.Module):
             ),
         )
 
-    def load_weights(self):
+    def load_weights(self) -> None:
         timeout: int = 30
 
         logger.info(f'Loading weights for {self._dump_label} from yandex disk')
@@ -84,10 +83,3 @@ class ASTBasedClassifier(nn.Module):
         input_tensor: torch.Tensor,
     ) -> torch.Tensor:
         return self._model(input_tensor).logits
-
-
-if __name__ == "__main__":
-    model = ASTBasedClassifier("https://disk.yandex.ru/d/1Jz2-F7fArielA", "animal_vs_no_animal")
-    inpt = torch.ones(4, 1024, 128)
-    outot = model.get_target_class_probability(inpt, 0)
-
