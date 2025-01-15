@@ -46,11 +46,8 @@ if 'CHUNK_SIZE' not in st.session_state:
 if 'BATCH_SIZE' not in st.session_state:
     st.session_state.BATCH_SIZE = constants.BATCH_SIZE
 
-if 'CHUNKS_WITH_WOLF_RATE' not in st.session_state:
-    st.session_state.CHUNKS_WITH_WOLF_RATE = constants.CHUNKS_WITH_WOLF_RATE
-
 if 'CONFIDENCE_THRESHOLD' not in st.session_state:
-    st.session_state.CONFIDENCE_THRESHOLD = 0.5
+    st.session_state.CONFIDENCE_THRESHOLD = constants.CONFIDENCE_THRESHOLD
 
 if 'DEVICE' not in st.session_state:
     st.session_state.DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
