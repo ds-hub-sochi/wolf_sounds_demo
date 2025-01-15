@@ -1,100 +1,85 @@
-import os
 from pathlib import Path
 from urllib.parse import urlencode
 
 import requests
 import torch
-import torchaudio
+from loguru import logger
 from torch import nn
 from torch.nn import functional as F
+from transformers import ASTForAudioClassification
+
+root_dir: Path = Path(__file__).parent.parent
 
 
-CWD: str = os.getcwd()
-
-class WolfClassifier(nn.Module):
+class ASTBasedClassifier(nn.Module):
     def __init__(
         self,
+        yandex_disk_public_key: str,
+        dump_label: str,
     ):
         super().__init__()
 
-        self.feature_extractor: torchaudio.models.Wav2Vec2Model = torchaudio.pipelines.WAV2VEC2_LARGE.get_model()
-
-        hidden_size: int = 0
-        if hasattr(
-            self.feature_extractor,
-            'encoder',
-        ):
-            hidden_size = self.feature_extractor.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.encoder.transformer.layers = self.feature_extractor.encoder.transformer.layers[
-                :8
-            ]
-        elif hasattr(
-            self.feature_extractor,
-            'model',
-        ):
-            hidden_size = self.feature_extractor.model.encoder.transformer.layers[0].attention.k_proj.out_features
-            self.feature_extractor.model.encoder.transformer.layers = (
-                self.feature_extractor.model.encoder.transformer.layers[:8]
-            )
-
-        self.linear: nn.Linear = nn.Linear(
-            hidden_size,
+        self._model: nn.Module = ASTForAudioClassification.from_pretrained('MIT/ast-finetuned-audioset-10-10-0.4593')
+        self._model.classifier.dense = nn.Linear(
+            self._model.classifier.dense.in_features,
             2,
         )
 
-        if not Path(CWD).joinpath('saved_weights/best_model.pth').exists():
+        self._yandex_disk_public_key: str = yandex_disk_public_key
+        self._dump_label: str = dump_label
+
+        if not (root_dir / 'saved_weights' / f'{dump_label}.pth').exists():
+            logger.info(f'Weight dump for {dump_label} was not found')
             self.load_weights()
 
         self.load_state_dict(
             torch.load(
-                str(Path(CWD).joinpath('saved_weights/best_model.pth')),
+                str(root_dir / 'saved_weights' / f'{dump_label}.pth'),
                 map_location='cpu',
-            )
+                weights_only=True,
+            ),
         )
 
-    def load_weights(self):
-        print("loading weights from yandex disk")
-        base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
-        public_key = 'https://disk.yandex.ru/d/LvdHTCXlt8TYgw'
+    def load_weights(self) -> None:
+        timeout: int = 30
 
-        final_url = base_url + urlencode({'public_key': public_key})
+        logger.info(f'Loading weights for {self._dump_label} from yandex disk')
+
+        base_url: str = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
+        base_url = base_url + urlencode({'public_key': self._yandex_disk_public_key})
+
         response = requests.get(
-            final_url,
-            timeout=30,
+            base_url,
+            timeout=timeout,
         )
-        download_url = response.json()['href']
-
+        download_url: str = response.json()['href']
         download_response = requests.get(
             download_url,
-            timeout=30,
+            timeout=timeout,
         )
-        print("saving pre-trained weights locally")
-        with open(str(Path(CWD).joinpath('saved_weights/best_model.pth')), 'wb') as f:
-            f.write(download_response.content)
+
+        logger.success(f'Weights for {self._dump_label} were downloaded')
+
+        with open(
+            str(root_dir / 'saved_weights' / f'{self._dump_label}.pth'),
+            'wb',
+        ) as dump_file:
+            dump_file.write(download_response.content)
+            logger.success(f'Weights for {self._dump_label} were saved as a saved_weights/{self._dump_label}')
 
     @torch.inference_mode()
-    def get_embeddings(
+    def get_target_class_probability(
         self,
-        input_tensor: torch.Tensor,
+        input_tensor: torch.Tensor,  # (batch_size, n_features, seq_len)
+        target_class: int,
     ) -> torch.Tensor:
-        embeddings = self.feature_extractor(input_tensor)[0].mean(axis=1)
-
-        return F.normalize(embeddings)
-
-    @torch.inference_mode()
-    def get_wolf_probability(
-        self,
-        input_tensor: torch.Tensor,
-    ) -> torch.Tensor:
-        features = self.get_embeddings(input_tensor)
-
         return F.softmax(
-            self.linear(features),
+            self._model(input_tensor).logits,
             dim=-1,
-        )[:, 0]
+        )[..., target_class]
 
     def forward(
         self,
         input_tensor: torch.Tensor,
     ) -> torch.Tensor:
-        return self.linear(F.normalize(self.feature_extractor(input_tensor)[0].mean(axis=1)))
+        return self._model(input_tensor).logits
