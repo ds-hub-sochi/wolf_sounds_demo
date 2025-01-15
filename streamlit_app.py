@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from pathlib import Path
+from shutil import make_archive
 
 import streamlit as st
 import torch
 import torchaudio
 from stqdm import stqdm
 
-from src import constants, feature_extractor, model
+from src import constants, feature_extractor, model, utils
 
 root_dir: Path = Path(__file__).parent
 
@@ -22,12 +24,12 @@ root_dir: Path = Path(__file__).parent
     exist_ok=True,
 )
 
-(root_dir / 'data' / 'processed' / 'audio_with_detected_wolf').mkdir(
+(root_dir / 'data' / 'processed' / 'audio_with_detected_animals').mkdir(
     parents=True,
     exist_ok=True,
 )
 
-markup: dict[str, dict[str, str]] = {}
+markup: dict[str, defaultdict[list[str]]] = {}
 with open(
     root_dir / 'data' / 'processed' / 'timings.json',
     'w',
@@ -60,13 +62,13 @@ if 'animal_classifier' not in st.session_state:
     st.session_state.animal_classifier = model.ASTBasedClassifier(
         'https://disk.yandex.ru/d/1Jz2-F7fArielA',
         'animal_vs_no_animal',
-    ).to(st.session_state.DEVICE)
+    ).to(st.session_state.DEVICE).eval()
 
 if 'wolf_classifier' not in st.session_state:
     st.session_state.wolf_classifier = model.ASTBasedClassifier(
         'https://disk.yandex.ru/d/S4m1-1AV-O10pQ',
         'wolf_vs_other_animal',
-    ).to(st.session_state.DEVICE)
+    ).to(st.session_state.DEVICE).eval()
 
 
 uploaded_files = st.file_uploader(
@@ -114,7 +116,7 @@ if st.button(label='Classify'):
         for start_index in range(0, len(audio_chunks), st.session_state.BATCH_SIZE):
             current_tensors: list[torch.Tensor] = audio_chunks[start_index : start_index + st.session_state.BATCH_SIZE]
 
-            duration.extend([_.shape[-1] // st.session_state.MODEL_SAMPLE_RATE for _ in current_tensors])
+            duration.extend([round(_.shape[-1] / st.session_state.MODEL_SAMPLE_RATE) for _ in current_tensors])
 
             features: list[torch.Tensor] = [st.session_state.feature_extractor.convert(wav) for wav in current_tensors]
 
@@ -162,3 +164,43 @@ if st.button(label='Classify'):
                 batch_markup[index] = 'wolf'
 
             current_file_markup.extend(batch_markup)
+
+        markup[file_name] = utils.format_markup(
+            durations=duration,
+            labels=current_file_markup,
+        )
+
+        if len(markup[file_name]) != 0:
+            torchaudio.save(
+                root_dir / 'data' / 'processed' / 'audio_with_detected_animals' / f'{file_name}',
+                waveform,
+                sample_rate=st.session_state.MODEL_SAMPLE_RATE,
+                format='wav',
+                backend='ffmpeg',
+            )
+
+    with open(
+        root_dir / 'data' / 'processed' / 'timings.json',
+        'w',
+        encoding='utf-8',
+    ) as timings_file:
+        json.dump(markup, timings_file)
+
+    make_archive(
+        root_dir / 'data' / 'results',
+        'zip',
+        root_dir / 'data' / 'processed',
+    )
+
+    st.write(f'Classification was done; {len(uploaded_files)} files were classified')
+
+    with open(
+        root_dir / 'data' / 'results.zip',
+        'rb',
+    ) as zip_result:
+        st.download_button(
+            label='Get classification results',
+            data=zip_result,
+            help='You will get an archive with audio files where animal were detected and also a file with timings',
+            file_name='results.zip',
+        )
