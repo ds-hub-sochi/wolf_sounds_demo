@@ -2,9 +2,6 @@ from collections import defaultdict
 
 from src import utils
 
-from collections import defaultdict
-from datetime import timedelta
-
 
 def test_from_dockstring():
     durations: list[int] = [30, 30, 30, 30]
