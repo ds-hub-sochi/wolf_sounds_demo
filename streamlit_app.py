@@ -204,8 +204,8 @@ if st.button(label='Classify'):
         )
 
     os.remove(root_dir / 'data' / 'results.zip')
-    os.remove(root_dir / 'data' /' processed' / 'timings.json')
+    os.remove(root_dir / 'data' / 'processed' / 'timings.json')
 
     all_files: list[str] = os.listdir(root_dir / 'data' / 'processed' / 'audio_with_detected_animals')
     for file in all_files:
-        os.remove(root_dir / 'data' / 'processed' /' audio_with_detected_animals' / f'{file}')
+        os.remove(root_dir / 'data' / 'processed' / 'audio_with_detected_animals' / f'{file}')
