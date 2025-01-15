@@ -3,6 +3,10 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import timedelta
 
+import torch
+
+from src.model import ASTBasedClassifier
+
 
 def format_markup(
     durations: list[int],
@@ -53,3 +57,53 @@ def format_markup(
     )
 
     return mapping
+
+@torch.inference_mode()
+def get_animal_indices(
+    animal_vs_no_animal_model: ASTBasedClassifier,
+    wolf_vs_other_animal_model: ASTBasedClassifier,
+    threshold: float,
+    batch: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """
+    This function takes batch and return a tuple of indices of its tensors where animal were detected 
+    and indices of its tensors where wolf's howl were detected
+
+    Args:
+        animal_vs_no_animal_model (ASTBasedClassifier): model that classifies any animal appearance
+        wolf_vs_other_animal_model (ASTBasedClassifier): model that classifies wolf howl appearance
+        threshold (float): confidence threshold for the classification
+        batch (torch.Tensor): batch of features to classify
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: indices of tensors with animals detected,
+                                           indices of tensors with wolf howl detected
+    """
+    device: torch.device = next(animal_vs_no_animal_model.parameters()).device
+
+    animal_probability: torch.Tensor = animal_vs_no_animal_model.get_target_class_probability(
+        batch,
+        0,
+    ).cpu()
+
+    animal_indices: torch.Tensor = (animal_probability > threshold).nonzero().view(-1)
+
+    animal_batch: torch.Tensor = torch.index_select(
+        batch.to('cpu'),
+        dim=0,
+        index=animal_indices,
+    ).to(device)
+
+    wolf_probability: torch.Tensor = wolf_vs_other_animal_model.get_target_class_probability(
+        animal_batch,
+        0,
+    ).cpu()
+
+    wolf_indices: torch.Tensor = (wolf_probability > threshold).nonzero().view(-1)
+    wolf_original_indices: torch.Tensor = torch.index_select(
+        animal_indices,
+        dim=0,
+        index=wolf_indices,
+    )
+
+    return animal_indices, wolf_original_indices

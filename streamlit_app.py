@@ -128,37 +128,17 @@ if st.button(label='Classify'):
                 dim=0,
             ).to(st.session_state.DEVICE)
 
-            animal_probability: torch.Tensor = st.session_state.animal_classifier.get_target_class_probability(
+            animal_indices, wolf_indices = utils.get_animal_indices(
+                st.session_state.animal_classifier,
+                st.session_state.wolf_classifier,
+                st.session_state.CONFIDENCE_THRESHOLD,
                 batch,
-                0,
-            ).cpu()
-
-            animal_indices: torch.Tensor = (animal_probability > st.session_state.CONFIDENCE_THRESHOLD).nonzero().view(-1)
-
-            animal_batch: torch.Tensor = torch.index_select(
-                batch.to('cpu'),
-                dim=0,
-                index=animal_indices,
-            ).to(st.session_state.DEVICE)
-
-            wolf_probability: torch.Tensor = st.session_state.wolf_classifier.get_target_class_probability(
-                animal_batch,
-                0,
-            ).cpu()
-
-            wolf_indices: torch.Tensor = (wolf_probability > st.session_state.CONFIDENCE_THRESHOLD).nonzero().view(-1)
-            wolf_original_indices: torch.Tensor = torch.index_select(
-                animal_indices,
-                dim=0,
-                index=wolf_indices,
             )
 
             batch_markup: list[str] = ['no animals' for _ in range(len(current_tensors))]
-
             for index in animal_indices:
                 batch_markup[index] = 'other animal'
-
-            for index in wolf_original_indices:
+            for index in wolf_indices:
                 batch_markup[index] = 'wolf'
 
             current_file_markup.extend(batch_markup)
