@@ -1,10 +1,10 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='wolf_sounds_demo',
+    name='src',
     packages=find_packages(),
     version='0.1.0',
-    description='Local wolf sound demo',
+    description='Wolf howl detection demo',
     author='Nikolai Makarov @ ds-hub-sochi',
     license='',
 )
