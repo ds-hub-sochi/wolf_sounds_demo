@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -201,3 +202,10 @@ if st.button(label='Classify'):
             help='You will get an archive with audio files where animal were detected and also a file with timings',
             file_name='results.zip',
         )
+
+    os.remove(root_dir / 'data' / 'results.zip')
+    os.remove(root_dir / 'data' /' processed' / 'timings.json')
+
+    all_files: list[str] = os.listdir(root_dir / 'data' / 'processed' / 'audio_with_detected_animals')
+    for file in all_files:
+        os.remove(root_dir / 'data' / 'processed' /' audio_with_detected_animals' / f'{file}')
