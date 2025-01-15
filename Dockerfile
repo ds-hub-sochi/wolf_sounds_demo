@@ -7,6 +7,7 @@ RUN apt-get -y upgrade
 RUN apt-get install -y ffmpeg
 
 COPY ./requirements.txt ./install/requirements.txt
+COPY ./setup.py ./setup.py
 RUN pip install -r ./install/requirements.txt
 
 EXPOSE 8501
