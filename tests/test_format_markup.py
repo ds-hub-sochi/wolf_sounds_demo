@@ -30,7 +30,7 @@ def test_all_intervals_have_the_same_class():
     durations: list[int] = [30, 30, 30]
     labels: list[str] = ['wolf', 'wolf', 'wolf']
 
-    formatted_markup: defaultdict[list[str]] = format_markup(
+    formatted_markup: defaultdict[list[str]] = utils.format_markup(
         durations,
         labels,
     )
@@ -46,7 +46,7 @@ def test_diffenets_adjacent_classes():
     durations: list[int] = [30, 30, 30, 30, 30]
     labels: list[str] = ['wolf', 'other animal', 'wolf', 'other animal', 'wolf']
 
-    formatted_markup: defaultdict[list[str]] = format_markup(
+    formatted_markup: defaultdict[list[str]] = utils.format_markup(
         durations,
         labels,
     )
@@ -68,7 +68,7 @@ def test_without_interval_overlapping():
     durations: list[int] = [30, 30, 30, 30, 30]
     labels: list[str] = ['wolf', 'other animal', 'wolf', 'other animal', 'wolf']
 
-    formatted_markup: defaultdict[list[str]] = format_markup(
+    formatted_markup: defaultdict[list[str]] = utils.format_markup(
         durations,
         labels,
     )
@@ -90,7 +90,7 @@ def test_all_unique_classes_appearance():
     durations: list[int] = [30, 30, 30]
     labels: list[str] = ['wolf', 'other animal', 'no animals']
 
-    formatted_markup: defaultdict[list[str]] = format_markup(
+    formatted_markup: defaultdict[list[str]] = utils.format_markup(
         durations,
         labels,
     )
