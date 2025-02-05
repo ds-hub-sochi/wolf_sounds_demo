@@ -13,6 +13,11 @@ from stqdm import stqdm
 
 from src import constants, feature_extractor, model, utils
 
+
+torch.backends.cuda.enable_mem_efficient_sdp(False)
+torch.backends.cuda.enable_flash_sdp(False)
+torch.backends.cuda.enable_math_sdp(True)
+
 root_dir: Path = Path(__file__).parent
 
 (root_dir / 'data' / 'processed').mkdir(
@@ -148,7 +153,7 @@ if st.button(label='Classify'):
             labels=current_file_markup,
         )
 
-        if len(markup[file_name]) != 0:
+        if 'other animal' in markup[file_name] or 'wolf' in markup[file_name]:
             torchaudio.save(
                 root_dir / 'data' / 'processed' / 'audio_with_detected_animals' / f'{file_name}',
                 waveform,
