@@ -153,7 +153,7 @@ if st.button(label='Classify'):
             labels=current_file_markup,
         )
 
-        if markup[file_name] != 0:
+        if 'other animal' in markup[file_name] or 'wolf' in markup[file_name]:
             torchaudio.save(
                 root_dir / 'data' / 'processed' / 'audio_with_detected_animals' / f'{file_name}',
                 waveform,
