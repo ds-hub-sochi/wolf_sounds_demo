@@ -5,6 +5,6 @@ setup(
     packages=find_packages(),
     version='0.1.0',
     description='Wolf howl detection demo',
-    author='Nikolai Makarov @ ds-hub-sochi',
+    author='Nikolai Makarov @ Sochi Hub',
     license='',
 )

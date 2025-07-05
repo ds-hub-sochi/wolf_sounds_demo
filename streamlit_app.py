@@ -64,13 +64,13 @@ if 'feature_extractor' not in st.session_state:
 if 'animal_classifier' not in st.session_state:
     st.session_state.animal_classifier = model.ASTBasedClassifier(
         'https://disk.yandex.ru/d/1Jz2-F7fArielA',
-        'animal_vs_no_animal',
+        'animal vs no animal',
     ).to(st.session_state.DEVICE).eval()
 
 if 'wolf_classifier' not in st.session_state:
     st.session_state.wolf_classifier = model.ASTBasedClassifier(
         'https://disk.yandex.ru/d/S4m1-1AV-O10pQ',
-        'wolf_vs_other_animal',
+        'wolf vs other animal',
     ).to(st.session_state.DEVICE).eval()
 
 
