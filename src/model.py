@@ -28,13 +28,14 @@ class ASTBasedClassifier(nn.Module):
         self._yandex_disk_public_key: str = yandex_disk_public_key
         self._dump_label: str = dump_label
 
-        if not (root_dir / 'saved_weights' / f'{dump_label}.pth').exists():
-            logger.info(f'Weight dump for {dump_label} was not found')
+        if not (root_dir / 'saved_weights' / f'{dump_label.replace(" ", "_")}.pth').exists():
+            logger.info(f'Weight dump for the {dump_label} was not found')
+
             self.load_weights()
 
         self.load_state_dict(
             torch.load(
-                str(root_dir / 'saved_weights' / f'{dump_label}.pth'),
+                str(root_dir / 'saved_weights' / f'{dump_label.replace(" ", "_")}.pth'),
                 map_location='cpu',
                 weights_only=True,
             ),
@@ -43,7 +44,7 @@ class ASTBasedClassifier(nn.Module):
     def load_weights(self) -> None:
         timeout: int = 30
 
-        logger.info(f'Loading weights for {self._dump_label} from yandex disk')
+        logger.info(f'Loading weights for the {self._dump_label} model from yandex disk')
 
         base_url: str = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
         base_url = base_url + urlencode({'public_key': self._yandex_disk_public_key})
@@ -58,14 +59,15 @@ class ASTBasedClassifier(nn.Module):
             timeout=timeout,
         )
 
-        logger.success(f'Weights for {self._dump_label} were downloaded')
+        logger.success(f'Weights for the {self._dump_label} model were downloaded')
 
         with open(
-            str(root_dir / 'saved_weights' / f'{self._dump_label}.pth'),
+            str(root_dir / 'saved_weights' / f'{self._dump_label.replace(" ", "_")}.pth'),
             'wb',
         ) as dump_file:
             dump_file.write(download_response.content)
-            logger.success(f'Weights for {self._dump_label} were saved as a saved_weights/{self._dump_label}')
+
+            logger.success(f'Weights for {self._dump_label} were saved as a saved_weights/{self._dump_label.replace(" ", "_")}')
 
     @torch.inference_mode()
     def get_target_class_probability(
