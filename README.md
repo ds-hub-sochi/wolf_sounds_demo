@@ -5,9 +5,10 @@ Here you can find a minimal example of models usage, as well as a proper weights
 
 # Usage
 
-Online demo is available at the [link](demo-wolf.ds-hub.ru/). Pre-trained weights will be downloaded automatically, but feel free to download them from the [yandex disk](https://disk.yandex.ru/client/disk/Wolf%20howl%20detection). There you will find pre-trained weights for bot models, as well as some data examples.
+Online demo is available at the [link](demo-wolf.ds-hub.ru/). Please not that for some reasons online demo can be unavailable. In this case you can easily build and run demo locally. See next section to build proposed demo correctly.
 
-Also you can infer our model locally. See next section to build proposed demo correctly.
+Pre-trained weights will be downloaded automatically, but feel free to download them from the [yandex disk](https://disk.yandex.ru/client/disk/Wolf%20howl%20detection).
+There you will find pre-trained weights for both models, as well as some data examples.
 
 # Local build and run
 
